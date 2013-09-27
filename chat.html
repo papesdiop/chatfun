@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>ChatFUN: Real Time web application with Nodejs and socket.io</title>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <style type="text/css">
+    body {
+        background-color : rgb(0,0,100);
+        color : white;
+        text-align : center;
+    }
+    #chat {
+        background-color : rgb(250,0,0);
+        opacity : 0.8;
+        width : 450px;
+        height : 250px;
+        margin : auto;
+        border : 2px white solid;
+        overflow : auto;
+    }    
+	.line {
+        border-bottom : 1px white solid;
+        padding : 4px;
+        text-align:left;
+        color : yellow;
+    }
+    </style>
+</head>
+<body>
+  <h1>Welcome to CHATFUN</h1>
+  <div id="chat"></div>
+  <form onsubmit="return (sendMessage());">
+    <b>Message : </b><input type="text" name="message" id="message" style="width:250px;" /> <input type="submit" value="Envoyer" />
+  </form>
+  <h1>CHATFUN The best REAL TIME web Application with Node JS and socket.io</h1>
+  <script type="text/javascript">
+  // On demande le pseudo de l'utilisateur
+  var pseudo = prompt('Votre pseudo ?') || 'User'+Math.ceil( Math.random()*100);
+  document.getElementById('chat').innerHTML += '<div class="line"><i><b>Hello '+pseudo+', welcome! </b></i></div>';
+  // On se connecte au serveur
+  var socket = io.connect('/chatfun');  
+  socket.emit('user_connexion', pseudo);  
+  
+  // Si un utilisateur envoie un message, le serveur nous renvoie le message
+  socket.on('getNewMessage', function (message) {
+    document.getElementById('chat').innerHTML += '<div class="line"><b>'+message.pseudo+'</b> : '+message.message+'</div>';
+  });
+  
+  // permet l'envoi du message au serveur
+  function sendMessage(mess) {
+  // On récupère le message
+  var message = document.getElementById('message').value;
+  // On appelle l'événement se trouvant sur le serveur
+  socket.emit('newMessage', { 'pseudo' : pseudo, 'message' : message });
+    // On ajoute notre message sur notre page
+    document.getElementById('chat').innerHTML += '<div class="line"><b>'+pseudo+'</b> : '+message+'</div>';
+	document.getElementById('message').value = '';
+    // Empeche l'actualisation de la page
+    return false;
+  }
+	//Informer les utilisateurs deja connectes, la connection d'un nouveau utilisateur
+	socket.on('user_connected', function(user){
+		document.getElementById('chat').innerHTML += '<div class="line"><i><b>'+user+' is connected</b></i></div>';
+	});
+  </script>
+</body>
+</html>
